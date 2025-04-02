@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        PIP_PATH = 'C:\\Users\\surjeeth\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\pip.exe'
+    }
+
     stages {
         stage('Clone Repository') {
             steps {
@@ -10,13 +14,13 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                sh '"$PIP_PATH" install -r requirements.txt'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'pytest tests/'
+                sh 'python -m unittest discover -s tests'
             }
         }
 
@@ -24,6 +28,19 @@ pipeline {
             steps {
                 junit 'test-reports/*.xml'
             }
+        }
+    }
+    
+    post {
+        always {
+            echo 'Cleaning up workspace...'
+            deleteDir() // Cleans up the workspace after execution
+        }
+        success {
+            echo 'Build and tests completed successfully!'
+        }
+        failure {
+            echo 'Build or tests failed. Check the logs for details.'
         }
     }
 }
